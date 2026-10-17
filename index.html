@@ -1449,7 +1449,19 @@ function profilKarte(w) {
     '<div class="begriffe">' + (w.begriffe.length ? w.begriffe.map(function (b) { return '<span class="pill">' + esc(b) + '</span>'; }).join('') : '<span class="pill warn">Suchbegriffe erzeugt die KI beim nächsten Lauf</span>') + '</div>' +
     '<dl><dt>Zustand</dt><dd>' + esc(w.z) + '</dd><dt>Preis</dt><dd>' + (w.min ? 'ab ' + eur(w.min) + ' ' : '') + (w.max ? 'bis ' + eur(w.max) : 'offen') + '</dd>' +
     (w.hinweis ? '<dt>Worauf achten</dt><dd>' + esc(w.hinweis) + '</dd>' : '') + '<dt>Letzter Lauf</dt><dd>' + (w.lauf ? vor(w.lauf) : 'noch nicht') + '</dd></dl>' +
-    (w.status ? '<div class="status' + (warn ? ' warn' : '') + '">' + esc(w.status) + '</div>' : '') + '</div></div>';
+    (w.status ? '<div class="status' + (warn ? ' warn' : '') + '">' + esc(w.status) + '</div>' : '') + suchLinks(w) + '</div></div>';
+}
+
+// Selbst weitersuchen: Vinted und Buycycle lassen sich nicht automatisch abfragen (Bot-Schutz), die Knöpfe öffnen die Suche
+function suchLinks(w) {
+  var q = String((w.begriffe && w.begriffe[0]) || w.w || '').trim();
+  if (!q) return '';
+  var e = encodeURIComponent(q);
+  return '<div class="feld" style="margin-top:14px"><div class="lbl">Selbst suchen: „' + esc(q) + '“</div><div class="chips" style="margin:0;padding:0">' +
+    [['Kleinanzeigen', 'https://www.kleinanzeigen.de/s-' + e.replace(/%20/g, '-') + '/k0'], ['Vinted', 'https://www.vinted.de/catalog?search_text=' + e + '&order=newest_first'],
+      ['Buycycle', 'https://buycycle.com/de-de/shop/search/' + e]].map(function (l) {
+      return '<a class="chip" href="' + esc(l[1]) + '">' + ic('extern', ' style="width:15px;height:15px"') + l[0] + '</a>';
+    }).join('') + '</div></div>';
 }
 
 // ---------- Treffer, Merkliste ----------
