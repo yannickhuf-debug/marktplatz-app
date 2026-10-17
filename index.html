@@ -539,7 +539,8 @@ function naehe(km, umkreis) {
 }
 
 function istMarkt(a) { return /^(Erstlauf|Über Max)/.test(a.g || ''); }
-function wartet(a) { return a.n == null && /Bewertung folgt|nur Preis gespeichert/.test(a.g || ''); }
+// Auf eine Note warten nur neue Anzeigen und gespeicherte mit gesenktem Preis; alte (Erstlauf, über Max) bewertet die KI nicht
+function wartet(a) { return a.n == null && /^(Neu|Preis gesenkt) – Bewertung folgt/.test(a.g || ''); }
 // Für Preise zählen nur passende Angebote: kein Betrugsverdacht, keine Note unter 4 (falscher Artikel)
 function zaehltFuerPreis(a) { return a.p > 0 && !/Betrug/.test(a.f || '') && !(a.n != null && a.n < 4); }
 
@@ -1042,7 +1043,8 @@ function vorbereiten() {
 }
 
 function baum(pj) { if (!D.baum[pj]) D.baum[pj] = baumBauen(pj, D.wuensche, D.angebote); return D.baum[pj]; }
-function sichtbar(l) { return ohneDoppelte(l.filter(function (a) { return !WEG[a.k]; })); }
+// Ausgeblendete und nicht mehr online (bleiben nur in der Merkliste) zählen nicht
+function sichtbar(l) { return ohneDoppelte(l.filter(function (a) { return !WEG[a.k] && String(a.f || '').indexOf('nicht mehr online') < 0; })); }
 function zustOk(a) { return S.zust === 'alle' || a.z === S.zust; }
 function bereichOk(a) { return S.bereich === 'alle' || (a.km != null && a.km <= (S.bereich === 'nah' ? 1 : 3) * D.umkreis); }
 
@@ -2140,6 +2142,8 @@ function karte(a) {
   if (PASST_SE && a.mm && a.mm.t !== 'tretlager') {
     var ok = passtZu(a, PASST_SE);
     zeile2 = '<span class="meta" style="font-weight:600;color:' + (ok === 'ja' ? 'var(--gut)' : ok === 'nein' ? 'var(--schl)' : 'var(--warn)') + '">' + (ok === 'ja' ? '✓ passt' : '⚠ ' + esc(passtGrund(a, PASST_SE))) + '</span>';
+  } else if (a.pa != null && a.p != null && a.pa > a.p) {
+    zeile2 = '<span class="meta" style="font-weight:600;color:var(--gut)">↓ Preis gesenkt, vorher ' + eur(a.pa) + '</span>';
   } else if (a.f) {
     zeile2 = '<span class="meta" style="font-weight:600;color:' + (/Betrug/.test(a.f) ? 'var(--schl)' : /Preisfehler|Günstig/.test(a.f) ? 'var(--gut)' : 'var(--sub)') + '">' + esc(a.f) + '</span>';
   } else if (a.pz != null && a.m && a.pz < 100) {
@@ -2165,7 +2169,7 @@ function detail(k) {
     '<button class="x" data-a="blatt-zu" aria-label="Schließen">' + ic('x') + '</button></div>' +
     '<p class="sub" style="font-size:15px;margin:18px 0 0">' + esc([a.mm && a.mm.mk, a.mm && a.mm.s, a.z === 'neu' ? 'Neu' : 'Gebraucht', a.pl].filter(Boolean).join(' · ')) + '</p>' +
     '<div class="d-ti">' + esc(a.ti) + '</div>' +
-    '<div class="d-preis"><b>' + eur(a.p) + '</b>' + (a.pz != null && a.m && a.pz < 100 ? '<span class="pill gut">' + eur(Math.round(a.m - a.p)) + ' unter Markt</span>' : '') +
+    '<div class="d-preis"><b>' + eur(a.p) + '</b>' + (a.pa != null && a.p != null && a.pa > a.p ? '<span class="pill gut">↓ vorher ' + eur(a.pa) + '</span>' : '') + (a.pz != null && a.m && a.pz < 100 ? '<span class="pill gut">' + eur(Math.round(a.m - a.p)) + ' unter Markt</span>' : '') +
     (a.f ? '<span class="pill ' + (/Preisfehler|Günstig/.test(a.f) ? 'gut' : 'schl') + '">' + esc(a.f) + '</span>' : '') + '</div>' +
     '<a class="d-oeffnen" href="' + esc(sicher(a.l) || '#') + '">Bei ' + esc(a.pl || 'der Plattform') + ' öffnen ' + ic('extern', ' style="width:19px;height:19px"') + '</a>';
   if (a.n != null || a.e) {
