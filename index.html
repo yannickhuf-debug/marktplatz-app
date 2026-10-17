@@ -1486,8 +1486,10 @@ function agentAnsicht() {
   h += '<div class="abschnitt status-raster">' +
     stKachel(g.aktiv ? '#16a34a' : '#dc2626', 'Automatik', g.aktiv ? 'alle ' + g.intervall + ' Min.' : 'gestoppt') +
     stKachel('#4f46e5', 'Letzter Lauf', g.letzterLauf ? vor(g.letzterLauf) : '–') +
-    stKachel(g.ki ? '#16a34a' : '#d97706', 'KI-Bewertung', g.ki ? (g.kiAnbieter || 'Gemini') + (g.kiFotos === 'Nein' ? '' : ' · mit Fotos') : 'kein Schlüssel') +
+    stKachel(g.ki ? '#16a34a' : '#d97706', 'KI-Bewertung', g.ki ? (g.kiAnbieter || 'Gemini') + (g.claudeErsatz ? ' + Claude' : '') + (g.kiFotos === 'Nein' ? '' : ' · mit Fotos') : 'kein Schlüssel') +
     stKachel(pause ? '#d97706' : '#16a34a', 'Kleinanzeigen', pause ? 'Pause bis ' + uhr(g.kaPauseBis) : 'erreichbar') + '</div>';
+  if (g.claudeErsatz || /claude/i.test(g.kiAnbieter || '')) h += '<p class="hinweis-klein">Claude heute: ' + (g.claudeHeute || 0) + ' von ' + (g.claudeMax || 0) + ' Aufrufen' +
+    (g.claudeErsatz ? ' (springt ein, wenn Gemini am Limit ist)' : '') + '</p>';
   h += '<div class="knopfreihe"><button class="knopf haupt" data-a="suchen">' + ic('neu') + 'Jetzt suchen</button><button class="knopf" data-a="testpush">' + ic('glocke') + 'Test-Push</button></div>';
   h += '<div class="abschnitt karte"><h2>Benachrichtigungen</h2><p class="sub klein" style="margin:6px 0 0">Pushes kommen über die kostenlose App <b>ntfy</b>. Dort diesen Kanal abonnieren:</p>' +
     '<div class="suche" style="box-shadow:none;background:var(--fl2)"><b style="flex:1;overflow:hidden;text-overflow:ellipsis">' + esc(g.ntfy || '–') + '</b><button data-a="kopieren" data-text="' + esc(g.ntfy || '') + '">' + ic('kopie') + '</button></div>' +
